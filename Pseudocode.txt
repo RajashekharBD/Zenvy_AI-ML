@@ -1,12 +1,9 @@
 BEGIN
 
-INPUT: Payroll dataset (salary, previous_salary, overtime_hours, regular_hours)
-
-INITIALIZE:
-    StandardScaler
-    Isolation Forest model
-    Autoencoder model
-    Concept Drift Detector
+IF payroll CSV file exists:
+    Load payroll data from CSV
+ELSE:
+    Generate synthetic payroll data
 
 ------------------------------------------------
 TRAINING PHASE
