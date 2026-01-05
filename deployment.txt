@@ -1,0 +1,36 @@
+Overview
+The anomaly detection engine is deployed as a backend service integrated with the payroll system. It continuously analyzes payroll data to detect salary manipulation and fake overtime using unsupervised learning techniques. The deployment supports both real-time validation and batch auditing while adapting to changing payroll patterns through concept drift detection.
+
+Deployment Architecture
+The payroll system or HR database acts as the data source. Payroll records are passed to the anomaly detection engine, where features are engineered and normalized. The engine applies trained unsupervised models to detect anomalies. Results are forwarded to the alert and reporting layer for HR review.
+
+Data Flow:
+Payroll System / HR Database
+→ Feature Engineering Module
+→ Anomaly Detection Engine
+→ Concept Drift Monitor
+→ Alert and Reporting System
+
+Model Training Strategy
+Model training is performed in batch mode using historical payroll data. Isolation Forest and Autoencoder models are trained to learn normal payroll behavior. Training is scheduled periodically (weekly or monthly) to ensure the models remain up to date. Trained models and thresholds are stored securely for inference.
+
+Real-Time Detection
+For real-time usage, the Isolation Forest model is used due to its low latency. Each new payroll entry, such as salary updates or overtime submissions, is processed immediately. If an anomaly score crosses the defined threshold, an alert is generated for HR or audit teams.
+
+Batch Processing
+Batch processing is used for deep analysis and monthly payroll audits. The Autoencoder model evaluates historical payroll data to identify long-term and complex anomalies that may not appear in real-time detection. Batch reports provide a broader view of payroll risks.
+
+Concept Drift Handling
+The system continuously monitors incoming payroll data for distribution changes using statistical tests. If significant drift is detected, the system flags it and triggers model retraining using recent data. This ensures the detection logic adapts to new payroll policies and organizational changes.
+
+Alert Generation and Monitoring
+When anomalies are detected, structured alerts are generated. Each alert includes employee ID, anomaly type, severity level, and a human-readable explanation. Alerts are stored in logs and can be displayed on an HR dashboard or sent via internal notification systems.
+
+Security and Compliance
+Employee identifiers are anonymized to protect privacy. Access to anomaly reports is restricted to authorized personnel only. Audit logs are maintained to track detection decisions and system activity.
+
+Scalability and Maintenance
+The system is designed to scale with increasing payroll data volume. It can be containerized and deployed on cloud infrastructure. Regular monitoring, retraining, and threshold tuning are performed to maintain accuracy and reliability.
+
+Future Enhancements
+Future improvements include API deployment using FastAPI, real-time streaming integration, dashboard visualization, and an HR feedback loop to improve detection quality.
