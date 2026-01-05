@@ -30,17 +30,17 @@ Modular and production-ready design
 🏗️ System Architecture
 
 Payroll Data
-     ↓
+     ->
 Feature Engineering & Scaling
-     ↓
+     ->
 Isolation Forest (Fast Detection)
-     ↓
+     ->
 Autoencoder (Deep Pattern Learning)
-     ↓
+     ->
 Ensemble Decision
-     ↓
+     ->
 Concept Drift Detection
-     ↓
+     ->
 Alert Generation & Explanation
 
 📂 Project Structure
@@ -70,15 +70,15 @@ The system derives behavioral features from raw payroll data:
 
 Feature	               Description
 
-salary_growth	     Ratio of current salary to previous salary
+salary_growth     ->	     Ratio of current salary to previous salary
 
-overtime_ratio	     Overtime hours relative to regular hours
+overtime_ratio     ->	     Overtime hours relative to regular hours
 
-is_round_overtime	Detects suspicious rounded overtime values
+is_round_overtime     ->	Detects suspicious rounded overtime values
 
-salary	          Absolute salary value
+salary     ->	          Absolute salary value
 
-overtime_hours	     Total overtime claimed
+overtime_hours     ->	     Total overtime claimed
 
 These features help the model learn normal payroll behavior and detect deviations.
 
