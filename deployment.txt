@@ -1,36 +1,40 @@
 Overview
-The anomaly detection engine is deployed as a backend service integrated with the payroll system. It continuously analyzes payroll data to detect salary manipulation and fake overtime using unsupervised learning techniques. The deployment supports both real-time validation and batch auditing while adapting to changing payroll patterns through concept drift detection.
+The anomaly detection engine is deployed as a backend analytics component integrated with the payroll system. Its purpose is to automatically identify suspicious payroll activities such as salary manipulation and fake overtime using unsupervised learning techniques. The system is designed to operate without labeled fraud data and to adapt to changes in payroll behavior over time.
 
 Deployment Architecture
-The payroll system or HR database acts as the data source. Payroll records are passed to the anomaly detection engine, where features are engineered and normalized. The engine applies trained unsupervised models to detect anomalies. Results are forwarded to the alert and reporting layer for HR review.
+The payroll system or HR database acts as the primary data source. Payroll records flow through a feature engineering module and are then analyzed by the anomaly detection engine. Detected anomalies and drift signals are forwarded to the alerting and reporting layer for review by HR or audit teams.
 
 Data Flow:
 Payroll System / HR Database
-→ Feature Engineering Module
+→ Data Ingestion Layer
+→ Feature Engineering & Scaling
 → Anomaly Detection Engine
-→ Concept Drift Monitor
+→ Concept Drift Monitoring
 → Alert and Reporting System
 
+Data Source and Ingestion
+The system supports payroll data ingestion from CSV files, allowing easy integration with existing HR systems and offline payroll exports. This enables deployment in environments where direct database connectivity is not available. If historical fields such as previous salary are unavailable in the input data, the system safely estimates baseline values to ensure continuous operation without interrupting the anomaly detection pipeline.
+
 Model Training Strategy
-Model training is performed in batch mode using historical payroll data. Isolation Forest and Autoencoder models are trained to learn normal payroll behavior. Training is scheduled periodically (weekly or monthly) to ensure the models remain up to date. Trained models and thresholds are stored securely for inference.
+Model training is performed in batch mode using historical payroll data. Unsupervised models such as Isolation Forest and Autoencoder are trained to learn normal payroll behavior. Training is scheduled periodically, such as weekly or monthly, to reflect updated employee patterns and payroll policies. Trained models and thresholds are stored for inference.
 
 Real-Time Detection
-For real-time usage, the Isolation Forest model is used due to its low latency. Each new payroll entry, such as salary updates or overtime submissions, is processed immediately. If an anomaly score crosses the defined threshold, an alert is generated for HR or audit teams.
+For real-time payroll validation, the Isolation Forest model is used due to its low computational latency. Each new payroll entry, including salary updates or overtime submissions, is evaluated immediately. If an anomaly score exceeds the defined threshold, the system generates an alert for further inspection.
 
 Batch Processing
-Batch processing is used for deep analysis and monthly payroll audits. The Autoencoder model evaluates historical payroll data to identify long-term and complex anomalies that may not appear in real-time detection. Batch reports provide a broader view of payroll risks.
+Batch processing is used for deep analysis and periodic payroll audits. The Autoencoder model analyzes accumulated payroll records to detect long-term or complex anomalies that may not be visible in real-time detection. Batch results help identify systemic payroll risks and repeated suspicious behavior.
 
 Concept Drift Handling
-The system continuously monitors incoming payroll data for distribution changes using statistical tests. If significant drift is detected, the system flags it and triggers model retraining using recent data. This ensures the detection logic adapts to new payroll policies and organizational changes.
+Payroll patterns may change due to promotions, policy updates, seasonal overtime, or organizational growth. To address this, the system continuously monitors feature distributions using statistical tests. When significant drift is detected, the system flags it and triggers model retraining using recent payroll data to maintain detection accuracy.
 
 Alert Generation and Monitoring
-When anomalies are detected, structured alerts are generated. Each alert includes employee ID, anomaly type, severity level, and a human-readable explanation. Alerts are stored in logs and can be displayed on an HR dashboard or sent via internal notification systems.
+When anomalies are detected, structured alerts are generated. Each alert includes employee ID, anomaly type, severity level, anomaly score, timestamp, and a human-readable explanation. Alerts are stored in logs and can be displayed on an HR dashboard or sent through internal notification systems.
 
 Security and Compliance
-Employee identifiers are anonymized to protect privacy. Access to anomaly reports is restricted to authorized personnel only. Audit logs are maintained to track detection decisions and system activity.
+Employee identifiers are anonymized to protect privacy. Access to anomaly reports is restricted to authorized personnel only. Audit logs are maintained to ensure transparency and traceability of anomaly detection decisions.
 
 Scalability and Maintenance
-The system is designed to scale with increasing payroll data volume. It can be containerized and deployed on cloud infrastructure. Regular monitoring, retraining, and threshold tuning are performed to maintain accuracy and reliability.
+The system is designed to scale with increasing payroll data volume. It can be deployed on local servers or cloud environments. Regular monitoring, retraining, and threshold tuning are performed to ensure long-term reliability and performance.
 
 Future Enhancements
-Future improvements include API deployment using FastAPI, real-time streaming integration, dashboard visualization, and an HR feedback loop to improve detection quality.
+Future improvements include API-based deployment, real-time streaming integration, visualization dashboards, automated retraining pipelines, and an HR feedback loop to continuously improve detection quality.
