@@ -1,0 +1,40 @@
+Overview
+The anomaly detection engine is deployed as a backend analytics component integrated with the payroll system. Its purpose is to automatically identify suspicious payroll activities such as salary manipulation and fake overtime using unsupervised learning techniques. The system is designed to operate without labeled fraud data and to adapt to changes in payroll behavior over time.
+
+Deployment Architecture
+The payroll system or HR database acts as the primary data source. Payroll records flow through a feature engineering module and are then analyzed by the anomaly detection engine. Detected anomalies and drift signals are forwarded to the alerting and reporting layer for review by HR or audit teams.
+
+Data Flow:
+Payroll System / HR Database
+→ Data Ingestion Layer
+→ Feature Engineering & Scaling
+→ Anomaly Detection Engine
+→ Concept Drift Monitoring
+→ Alert and Reporting System
+
+Data Source and Ingestion
+The system supports payroll data ingestion from CSV files, allowing easy integration with existing HR systems and offline payroll exports. This enables deployment in environments where direct database connectivity is not available. If historical fields such as previous salary are unavailable in the input data, the system safely estimates baseline values to ensure continuous operation without interrupting the anomaly detection pipeline.
+
+Model Training Strategy
+Model training is performed in batch mode using historical payroll data. Unsupervised models such as Isolation Forest and Autoencoder are trained to learn normal payroll behavior. Training is scheduled periodically, such as weekly or monthly, to reflect updated employee patterns and payroll policies. Trained models and thresholds are stored for inference.
+
+Real-Time Detection
+For real-time payroll validation, the Isolation Forest model is used due to its low computational latency. Each new payroll entry, including salary updates or overtime submissions, is evaluated immediately. If an anomaly score exceeds the defined threshold, the system generates an alert for further inspection.
+
+Batch Processing
+Batch processing is used for deep analysis and periodic payroll audits. The Autoencoder model analyzes accumulated payroll records to detect long-term or complex anomalies that may not be visible in real-time detection. Batch results help identify systemic payroll risks and repeated suspicious behavior.
+
+Concept Drift Handling
+Payroll patterns may change due to promotions, policy updates, seasonal overtime, or organizational growth. To address this, the system continuously monitors feature distributions using statistical tests. When significant drift is detected, the system flags it and triggers model retraining using recent payroll data to maintain detection accuracy.
+
+Alert Generation and Monitoring
+When anomalies are detected, structured alerts are generated. Each alert includes employee ID, anomaly type, severity level, anomaly score, timestamp, and a human-readable explanation. Alerts are stored in logs and can be displayed on an HR dashboard or sent through internal notification systems.
+
+Security and Compliance
+Employee identifiers are anonymized to protect privacy. Access to anomaly reports is restricted to authorized personnel only. Audit logs are maintained to ensure transparency and traceability of anomaly detection decisions.
+
+Scalability and Maintenance
+The system is designed to scale with increasing payroll data volume. It can be deployed on local servers or cloud environments. Regular monitoring, retraining, and threshold tuning are performed to ensure long-term reliability and performance.
+
+Future Enhancements
+Future improvements include API-based deployment, real-time streaming integration, visualization dashboards, automated retraining pipelines, and an HR feedback loop to continuously improve detection quality.
