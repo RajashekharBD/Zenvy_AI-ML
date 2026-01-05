@@ -30,28 +30,17 @@ Modular and production-ready design
 🏗️ System Architecture
 
 Payroll Data
-
      ↓
-
 Feature Engineering & Scaling
-
      ↓
-
 Isolation Forest (Fast Detection)
-
      ↓
 Autoencoder (Deep Pattern Learning)
-
      ↓
-
 Ensemble Decision
-     
      ↓
-     
 Concept Drift Detection
-     
      ↓
-     
 Alert Generation & Explanation
 
 📂 Project Structure
@@ -61,6 +50,7 @@ Alert Generation & Explanation
 ├── anomaly_detection.py   # Main implementation
 
 ├── README.md              # Project documentation
+
 
 🧪 Technologies Used
 
@@ -79,10 +69,15 @@ SciPy
 The system derives behavioral features from raw payroll data:
 
 Feature	               Description
+
 salary_growth	     Ratio of current salary to previous salary
+
 overtime_ratio	     Overtime hours relative to regular hours
+
 is_round_overtime	Detects suspicious rounded overtime values
+
 salary	          Absolute salary value
+
 overtime_hours	     Total overtime claimed
 
 These features help the model learn normal payroll behavior and detect deviations.
@@ -132,43 +127,67 @@ Flags distribution shifts automatically
 This prevents the model from becoming outdated over time.
 
 🚨 Alert Generation
+
 Each anomaly generates a structured alert containing:
+
 Employee ID
+
 Timestamp
+
 Anomaly type (salary_manipulation / fake_overtime)
+
 Anomaly score
+
 Severity level
+
 Human-readable explanation
 
 Example Alert
+
 Employee: EMP0032
+
 Type: fake_overtime
+
 Severity: high
+
 Explanation: Suspicious overtime pattern
 
 ▶️ How to Run
+
 1️⃣ Install Dependencies
+
 pip install numpy pandas scikit-learn torch scipy
 
 2️⃣ Run the Program
+
 python anomaly_detection.py
 
 
 The script will:
+
 Generate synthetic payroll data
+
 Train anomaly detection models
+
 Detect anomalies
+
 Display sample alerts
 
 📈 Sample Output
 
 Anomalies detected: 40
+
 Concept drift detected: False
+
 AnomalyAlert(employee_id='EMP0003', anomaly_type='salary_manipulation', severity='high')
+
 
 📌 Why Unsupervised Learning?
 
 Fraud labels are rare or unavailable
+
 Fraud patterns constantly change
+
 Manual labeling is expensive and unreliable
+
 Unsupervised learning allows the system to learn normal behavior first and flag deviations automatically.
