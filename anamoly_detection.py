@@ -17,7 +17,6 @@ from collections import deque
 # ============================================================
 # DATA PREPROCESSING
 # ============================================================
-
 class PayrollPreprocessor:
     def __init__(self):
         self.scaler = StandardScaler()
@@ -25,6 +24,14 @@ class PayrollPreprocessor:
 
     def preprocess(self, df: pd.DataFrame):
         df = df.copy()
+
+        # Handle missing previous_salary safely
+        if "previous_salary" not in df.columns:
+            df["previous_salary"] = df["salary"] * 0.95
+
+        # Handle missing regular_hours safely, assume 40 hours if not present
+        if "regular_hours" not in df.columns:
+            df["regular_hours"] = 40 # Assuming a standard work week
 
         # Feature engineering
         df["salary_growth"] = df["salary"] / df["previous_salary"].replace(0, 1)
@@ -50,7 +57,7 @@ class PayrollPreprocessor:
         return X_scaled, df
 
 # ============================================================
-# AUTOENCODER MODEL
+# AUTOENCODER (BATCH ANALYSIS)
 # ============================================================
 
 class Autoencoder(nn.Module):
@@ -76,26 +83,26 @@ class Autoencoder(nn.Module):
 
 class ConceptDriftDetector:
     def __init__(self, window_size=200, threshold=0.1):
-        self.ref_window = deque(maxlen=window_size)
-        self.cur_window = deque(maxlen=window_size)
+        self.reference = deque(maxlen=window_size)
+        self.current = deque(maxlen=window_size)
         self.threshold = threshold
 
     def initialize(self, X):
         for row in X:
-            self.ref_window.append(row)
+            self.reference.append(row)
 
     def update(self, X):
         for row in X:
-            self.cur_window.append(row)
+            self.current.append(row)
 
-        if len(self.cur_window) < len(self.ref_window) // 2:
+        if len(self.current) < len(self.reference) // 2:
             return False
 
         drift_score = 0
         for i in range(X.shape[1]):
             ks_stat, _ = stats.ks_2samp(
-                np.array(self.ref_window)[:, i],
-                np.array(self.cur_window)[:, i]
+                np.array(self.reference)[:, i],
+                np.array(self.current)[:, i]
             )
             drift_score += ks_stat
 
@@ -112,11 +119,11 @@ class AnomalyAlert:
     timestamp: datetime
     anomaly_type: str
     score: float
-    explanation: str
     severity: str
+    explanation: str
 
 # ============================================================
-# MAIN ENGINE
+# MAIN ANOMALY DETECTION ENGINE
 # ============================================================
 
 class PayrollAnomalyEngine:
@@ -130,17 +137,17 @@ class PayrollAnomalyEngine:
         )
 
         self.autoencoder = None
-        self.threshold = None
+        self.recon_threshold = None
         self.drift_detector = ConceptDriftDetector()
         self.trained = False
 
     def train(self, df: pd.DataFrame):
         X, _ = self.preprocessor.preprocess(df)
 
-        # Isolation Forest
+        # Train Isolation Forest
         self.iforest.fit(X)
 
-        # Autoencoder
+        # Train Autoencoder
         X_tensor = torch.tensor(X, dtype=torch.float32)
         self.autoencoder = Autoencoder(X.shape[1])
         optimizer = torch.optim.Adam(self.autoencoder.parameters(), lr=0.001)
@@ -148,14 +155,14 @@ class PayrollAnomalyEngine:
 
         for _ in range(50):
             optimizer.zero_grad()
-            recon = self.autoencoder(X_tensor)
-            loss = loss_fn(recon, X_tensor)
+            reconstructed = self.autoencoder(X_tensor)
+            loss = loss_fn(reconstructed, X_tensor)
             loss.backward()
             optimizer.step()
 
         with torch.no_grad():
-            errors = torch.mean((recon - X_tensor) ** 2, dim=1)
-            self.threshold = np.percentile(errors.numpy(), 95)
+            errors = torch.mean((reconstructed - X_tensor) ** 2, dim=1)
+            self.recon_threshold = np.percentile(errors.numpy(), 95)
 
         self.drift_detector.initialize(X)
         self.trained = True
@@ -166,32 +173,28 @@ class PayrollAnomalyEngine:
 
         X, df_feat = self.preprocessor.preprocess(df)
 
-        iso_pred = self.iforest.predict(X)
+        iso_preds = self.iforest.predict(X)
         iso_scores = self.iforest.decision_function(X)
 
         with torch.no_grad():
             X_tensor = torch.tensor(X, dtype=torch.float32)
             recon = self.autoencoder(X_tensor)
-            errors = torch.mean((recon - X_tensor) ** 2, dim=1).numpy()
+            recon_errors = torch.mean((recon - X_tensor) ** 2, dim=1).numpy()
 
-        anomalies = (iso_pred == -1) | (errors > self.threshold)
-        drift = self.drift_detector.update(X)
+        anomalies = (iso_preds == -1) | (recon_errors > self.recon_threshold)
+        drift_detected = self.drift_detector.update(X)
 
         alerts = []
-        for i, is_anomaly in enumerate(anomalies):
-            if is_anomaly:
+        for i, flag in enumerate(anomalies):
+            if flag:
                 row = df_feat.iloc[i]
-                anomaly_type = (
-                    "salary_manipulation"
-                    if row["salary_growth"] > 1.3
-                    else "fake_overtime"
-                )
 
-                explanation = (
-                    "Unusual salary increase"
-                    if anomaly_type == "salary_manipulation"
-                    else "Suspicious overtime pattern"
-                )
+                if row["salary_growth"] > 1.3:
+                    anomaly_type = "salary_manipulation"
+                    explanation = "Unusual salary increase compared to previous period"
+                else:
+                    anomaly_type = "fake_overtime"
+                    explanation = "Overtime pattern deviates from normal behavior"
 
                 alerts.append(
                     AnomalyAlert(
@@ -199,23 +202,37 @@ class PayrollAnomalyEngine:
                         timestamp=datetime.now(),
                         anomaly_type=anomaly_type,
                         score=float(abs(iso_scores[i])),
-                        explanation=explanation,
-                        severity="high"
+                        severity="high",
+                        explanation=explanation
                     )
                 )
 
         return {
             "anomalies_detected": len(alerts),
-            "concept_drift": drift,
+            "concept_drift_detected": drift_detected,
             "alerts": alerts
         }
 
 # ============================================================
-# SAMPLE DATA + DEMO
+# DATA LOADING
 # ============================================================
+
+def load_payroll_data(csv_path="/content/payroll.csv"):
+    """
+    Load payroll data from CSV file.
+    Falls back to synthetic data if file is not found.
+    """
+    try:
+        df = pd.read_csv(csv_path)
+        print(f"Loaded payroll data from {csv_path}")
+        return df
+    except FileNotFoundError:
+        print("payroll.csv not found. Using generated sample data.")
+        return generate_sample_data()
 
 def generate_sample_data(n=500):
     np.random.seed(42)
+
     df = pd.DataFrame({
         "employee_id": [f"EMP{i:04d}" for i in range(n)],
         "salary": np.random.normal(50000, 12000, n),
@@ -230,15 +247,21 @@ def generate_sample_data(n=500):
 
     return df
 
+# ============================================================
+# MAIN
+# ============================================================
+
 if __name__ == "__main__":
-    data = generate_sample_data()
+
+    # Load payroll data
+    data = load_payroll_data("/content/payroll.csv")
 
     engine = PayrollAnomalyEngine()
     engine.train(data)
 
     results = engine.detect(data)
     print("Anomalies detected:", results["anomalies_detected"])
-    print("Concept drift detected:", results["concept_drift"])
+    print("Concept drift detected:", results["concept_drift_detected"])
 
     for alert in results["alerts"][:3]:
         print(alert)
