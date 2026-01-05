@@ -1,0 +1,52 @@
+BEGIN
+
+INPUT: Payroll dataset (salary, previous_salary, overtime_hours, regular_hours)
+
+INITIALIZE:
+    StandardScaler
+    Isolation Forest model
+    Autoencoder model
+    Concept Drift Detector
+
+------------------------------------------------
+TRAINING PHASE
+------------------------------------------------
+
+1. Preprocess payroll data
+    - Compute salary_growth = salary / previous_salary
+    - Compute overtime_ratio = overtime_hours / regular_hours
+    - Detect round overtime values
+    - Normalize numerical features
+
+2. Train Isolation Forest
+    - Learn normal payroll behavior
+    - Store anomaly score threshold
+
+3. Train Autoencoder
+    - Learn to reconstruct normal payroll data
+    - Calculate reconstruction error
+    - Set anomaly threshold using 95th percentile
+
+4. Initialize Concept Drift Detector
+    - Store feature distributions as reference window
+
+------------------------------------------------
+DETECTION PHASE
+------------------------------------------------
+
+FOR each new payroll record or batch:
+    1. Preprocess input data
+    2. Predict anomaly using Isolation Forest
+    3. Compute reconstruction error using Autoencoder
+    4. Combine results using ensemble logic
+    5. Check for concept drift using statistical tests
+    6. IF anomaly detected:
+          - Classify anomaly type (salary manipulation / fake overtime)
+          - Generate explanation
+          - Create alert
+
+OUTPUT:
+    List of detected anomalies with explanations
+    Concept drift status
+
+END
