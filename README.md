@@ -30,22 +30,34 @@ Modular and production-ready design
 🏗️ System Architecture
 
 Payroll Data
+
      ↓
+
 Feature Engineering & Scaling
+
      ↓
+
 Isolation Forest (Fast Detection)
+
      ↓
 Autoencoder (Deep Pattern Learning)
+
      ↓
+
 Ensemble Decision
+     
      ↓
+     
 Concept Drift Detection
+     
      ↓
+     
 Alert Generation & Explanation
 
 📂 Project Structure
 
 .
+
 ├── anomaly_detection.py   # Main implementation
 
 ├── README.md              # Project documentation
@@ -78,14 +90,23 @@ These features help the model learn normal payroll behavior and detect deviation
 🧠 Models Used
 
 🔹 Isolation Forest
+
 Primary anomaly detection model
+
 Efficient for real-time payroll validation
+
 Flags records that deviate strongly from normal patterns
+
 🔹 Autoencoder (Neural Network)
+
 Learns compressed representation of normal payroll data
+
 High reconstruction error indicates anomalies
+
 Used for deeper batch analysis
+
 🔹 Ensemble Strategy
+
 An employee record is marked anomalous if any model detects abnormal behavior, reducing false negatives.
 
 🔄 Concept Drift Handling
