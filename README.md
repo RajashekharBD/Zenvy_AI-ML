@@ -6,20 +6,29 @@ This project implements an Anomaly Detection Engine for payroll systems using un
 It is designed to automatically identify suspicious payroll activities such as:
 
 Salary manipulation
+
 Fake or inflated overtime claims
+
 Since real payroll fraud data is rarely labeled, the system relies entirely on unsupervised learning techniques and statistical analysis to detect abnormal patterns.
 
 🎯 Key Features
 
 Unsupervised anomaly detection (no fraud labels required)
+
 Detects salary manipulation & fake overtime
+
 Real-time friendly (Isolation Forest)
+
 Batch analysis using Deep Learning (Autoencoder)
+
 Concept drift detection for changing payroll behavior
+
 Human-readable anomaly alerts
+
 Modular and production-ready design
 
 🏗️ System Architecture
+
 Payroll Data
      ↓
 Feature Engineering & Scaling
@@ -38,6 +47,7 @@ Alert Generation & Explanation
 
 .
 ├── anomaly_detection.py   # Main implementation
+
 ├── README.md              # Project documentation
 
 🧪 Technologies Used
@@ -56,12 +66,12 @@ SciPy
 
 The system derives behavioral features from raw payroll data:
 
-Feature	Description
-salary_growth	Ratio of current salary to previous salary
-overtime_ratio	Overtime hours relative to regular hours
+Feature	               Description
+salary_growth	     Ratio of current salary to previous salary
+overtime_ratio	     Overtime hours relative to regular hours
 is_round_overtime	Detects suspicious rounded overtime values
-salary	Absolute salary value
-overtime_hours	Total overtime claimed
+salary	          Absolute salary value
+overtime_hours	     Total overtime claimed
 
 These features help the model learn normal payroll behavior and detect deviations.
 
