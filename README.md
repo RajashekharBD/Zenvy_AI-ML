@@ -115,19 +115,12 @@ Flags distribution shifts automatically
 This prevents the model from becoming outdated over time.
 
 🚨 Alert Generation
-
 Each anomaly generates a structured alert containing:
-
 Employee ID
-
 Timestamp
-
 Anomaly type (salary_manipulation / fake_overtime)
-
 Anomaly score
-
 Severity level
-
 Human-readable explanation
 
 Example Alert
@@ -145,21 +138,19 @@ python anomaly_detection.py
 
 
 The script will:
-
 Generate synthetic payroll data
-
 Train anomaly detection models
-
 Detect anomalies
-
 Display sample alerts
 
 📈 Sample Output
+
 Anomalies detected: 40
 Concept drift detected: False
 AnomalyAlert(employee_id='EMP0003', anomaly_type='salary_manipulation', severity='high')
 
 📌 Why Unsupervised Learning?
+
 Fraud labels are rare or unavailable
 Fraud patterns constantly change
 Manual labeling is expensive and unreliable
